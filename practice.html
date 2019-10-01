@@ -4,10 +4,52 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <style>
+      .cool-title {
+        text-align: center;
+        font-family: 'Oswald', Helvetica, sans-serif;
+        font-size: 80px;
+        transform: skewY(-10deg);
+        letter-spacing: 4px;
+        word-spacing: -8px;
+        color: tomato;
+        text-shadow: -1px -1px 0 firebrick, -2px -2px 0 firebrick,
+          -3px -3px 0 firebrick, -4px -4px 0 firebrick, -5px -5px 0 firebrick,
+          -6px -6px 0 firebrick, -7px -7px 0 firebrick, -8px -8px 0 firebrick,
+          -30px 20px 40px dimgrey;
+      }
+    </style>
     <title>Practice</title>
   </head>
   <body>
-    <h1>Practice</h1>
+    <div class="output"></div>
+    <h1>Shopping List</h1>
+    <p id="first">Get it done today</p>
+    <input type="text" placeholder="enter items" />
+    <!-- <p class="second">No excuses</p> -->
+    <button class="enter">Click Me</button>
+    <ul>
+      <li class="bold red" random="23">Notebook</li>
+      <li>Jello</li>
+      <li>Spinach</li>
+      <li>Rice</li>
+      <li>Birthday Cake</li>
+      <li>Candles</li>
+    </ul>
+    <script>
+      const output = document.querySelector('.output');
+      const input = document.querySelector('input');
+      const button = document.querySelector('button');
+      const ul = document.querySelector('ul');
+      button.addEventListener('click', function() {
+        let li = document.createElement('li');
+        li.appendChild(document.createTextNode('testing'));
+        ul.appendChild(li);
+        // console.log('Clicked The Button Bozo');
+        // let temp = input.value;
+        // output.innerHTML = temp;
+      });
+    </script>
   </body>
 </html>
 
