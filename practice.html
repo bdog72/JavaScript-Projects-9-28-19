@@ -22,13 +22,11 @@
     <title>Practice</title>
   </head>
   <body>
-    <div class="output"></div>
-    <h1>Shopping List</h1>
+    <h1 class="cool-title">Shopping List</h1>
     <p id="first">Get it done today</p>
-    <input type="text" placeholder="enter items" />
-    <!-- <p class="second">No excuses</p> -->
-    <button class="enter">Click Me</button>
-    <ul>
+    <input id="userinput" type="text" placeholder="Enter Item" />
+    <button id="enter">Enter</button>
+    <ul class="list">
       <li class="bold red" random="23">Notebook</li>
       <li>Jello</li>
       <li>Spinach</li>
@@ -37,17 +35,32 @@
       <li>Candles</li>
     </ul>
     <script>
-      const output = document.querySelector('.output');
-      const input = document.querySelector('input');
-      const button = document.querySelector('button');
+      const button = document.querySelector('#enter');
+      const input = document.querySelector('#userinput');
+      // const ul = document.querySelector('.list');
       const ul = document.querySelector('ul');
-      button.addEventListener('click', function() {
+
+      const inputLength = () => {
+        return input.value.length;
+      };
+
+      const createListElement = () => {
         let li = document.createElement('li');
-        li.appendChild(document.createTextNode('testing'));
+        li.appendChild(document.createTextNode(input.value));
         ul.appendChild(li);
-        // console.log('Clicked The Button Bozo');
-        // let temp = input.value;
-        // output.innerHTML = temp;
+        input.value = '';
+      };
+
+      button.addEventListener('click', function() {
+        if (inputLength() > 0) {
+          createListElement();
+        }
+      });
+
+      input.addEventListener('keypress', function(e) {
+        if (inputLength() > 0 && e.keyCode === 13) {
+          createListElement();
+        }
       });
     </script>
   </body>
