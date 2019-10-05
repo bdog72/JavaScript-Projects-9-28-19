@@ -1,0 +1,270 @@
+<!-- <!DOCTYPE html> -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Alien Invader Game</title>
+    <style>
+      .container {
+        width: 80%;
+        height: 80%;
+        margin-left: 10%;
+        background-color: black;
+        overflow: hidden;
+      }
+
+      .start-button {
+        text-align: center;
+        font-size: 2em;
+        color: white;
+        background-color: red;
+        cursor: pointer;
+      }
+      /* @media (min-width: 700px) {
+        .start-button {
+          color: green;
+        }
+      } */
+      .my-ship {
+        position: absolute;
+        left: 40%;
+        bottom: 20%;
+        background-color: white;
+        width: 100px;
+        height: 30px;
+      }
+
+      .fire-me {
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        background-color: red;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      .alien {
+        position: absolute;
+        display: inline-block;
+        top: 0;
+        left: 0;
+        width: 80px;
+        height: 50px;
+        padding: 5px;
+        color: white;
+        background-color: blue;
+        box-shadow: 0px 1px 8px 0px black;
+        font-size: 1em;
+        text-align: center;
+        border-radius: 10px;
+      }
+
+      .eye {
+        position: absolute;
+        width: 20px;
+        border-radius: 25%;
+        color: black;
+        height: 20px;
+        background-color: aliceblue;
+      }
+
+      .eye:after {
+        content: '\2022';
+      }
+
+      .mouth {
+        position: absolute;
+        width: 70%;
+        height: 2px;
+        bottom: 10px;
+        left: 10%;
+        border: 4px dotted white;
+        background-color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- prettier-ignore -->
+    <div class="top-bar">
+      Score: <span class="score">0</span>
+    </div>
+    <div class="container">
+      <div class="start-button">Start Game</div>
+      <div class="my-ship"></div>
+      <div class="fire-me hide"></div>
+    </div>
+    <script>
+      const scoreOutput = document.querySelector('.score');
+      const container = document.querySelector('.container');
+      const buttonStart = document.querySelector('.start-button');
+      const myShip = document.querySelector('.my-ship');
+      const fireMe = document.querySelector('.fire-me');
+
+      const containerDim = container.getBoundingClientRect();
+
+      let player = {
+        score: 0,
+        speed: 5,
+        gameOver: true,
+        fire: false,
+        alienSpeed: 5
+      };
+
+      buttonStart.addEventListener('click', startGame);
+
+      let keyValue = {};
+      document.addEventListener('keydown', e => {
+        let key = e.keyCode;
+        if (key === 37) {
+          keyValue.left = true;
+        } else if (key === 39) {
+          keyValue.right = true;
+        } else if (key === 38 || key === 32) {
+          if (!player.fire) {
+            addShoot();
+          }
+        }
+      });
+
+      document.addEventListener('keyup', e => {
+        let key = e.keyCode;
+        if (key === 37) {
+          keyValue.left = false;
+        } else if (key === 39) {
+          keyValue.right = false;
+        }
+      });
+
+      function startGame() {
+        if (player.gameOver) {
+          player.gameOver = false;
+          buttonStart.style.display = 'none';
+          player.alienSpeed = 5;
+          setUpAliens(5);
+          // console.log('Start');
+          player.animationFrame = requestAnimationFrame(update);
+        }
+      }
+
+      function setUpAliens(num) {
+        let tempWidth = 70;
+        let lastCol = containerDim.width - tempWidth;
+        let row = {
+          x: containerDim.left + 50,
+          y: 50
+        };
+        for (let x = 0; x < num; x++) {
+          if (row.x > lastCol - tempWidth) {
+            row.y += 70;
+            row.x = containerDim.left + 50;
+          }
+          alienMaker(row, tempWidth);
+          row.x += tempWidth + 20;
+        }
+      }
+
+      const randomColor = () => {
+        return `#${Math.random()
+          .toString(16)
+          .substr(-6)}`;
+      };
+
+      // function randomColor() {
+      //   return `#${Math.random()
+      //     .toString(16)
+      //     .substr(-6)}`;
+      // }
+
+      function alienMaker(row, tempWidth) {
+        let div = document.createElement('div');
+        div.classList.add('alien');
+
+        let eye1 = document.createElement('span');
+        eye1.classList.add('eye');
+        eye1.style.left = '10px';
+        div.appendChild(eye1);
+
+        let eye2 = document.createElement('span');
+        eye2.classList.add('eye');
+        eye2.style.right = '10px';
+        div.appendChild(eye2);
+
+        let mouth = document.createElement('span');
+        mouth.classList.add('mouth');
+        mouth.style.botton = '10px';
+        div.appendChild(mouth);
+
+        div.style.width = `${tempWidth}px`;
+        div.xPosition = Math.floor(row.x);
+        div.yPosition = Math.floor(row.y);
+        div.style.left = `${div.xPosition}px`;
+        div.style.top = `${div.yPosition}px`;
+        div.style.backgroundColor = randomColor();
+        div.directionMove = 1;
+        container.appendChild(div);
+
+        // console.log(div);
+      }
+
+      function addShoot() {
+        player.fire = true;
+        fireMe.classList.remove('hide');
+        fireMe.xPosition = myShip.offsetLeft + myShip.offsetWidth / 2;
+        fireMe.yPosition = myShip.offsetTop - 10;
+        fireMe.style.left = fireMe.xPosition + 'px';
+        fireMe.style.top = fireMe.yPosition + 'px';
+        fireMe.style.backgroundColor = randomColor();
+      }
+
+      function update() {
+        let tempAliens = document.querySelectorAll('.alien');
+        for (let x = tempAliens.length - 1; x > -1; x--) {
+          let el = tempAliens[x];
+          if (
+            el.xPosition > containerDim.width - el.offsetWidth ||
+            el.xPosition < containerDim.left
+          ) {
+            el.directionMove *= -1;
+            el.yPosition += 40;
+          }
+          // el.directionMove = 1;
+          el.xPosition += player.alienSpeed * el.directionMove;
+          // el.yPosition = Math.floor(row.y);
+          el.style.left = `${el.xPosition}px`;
+          el.style.top = `${el.yPosition}px`;
+        }
+
+        let tempPosition = myShip.offsetLeft;
+
+        if (player.fire) {
+          if (fireMe.yPosition > 0) {
+            fireMe.yPosition -= 15;
+            fireMe.style.top = fireMe.yPosition + 'px';
+          } else {
+            player.fire = false;
+            fireMe.classList.add('hide');
+            fireMe.yPosition = containerDim.height + 100;
+          }
+        }
+
+        if (keyValue.left && tempPosition > containerDim.left) {
+          tempPosition -= player.speed;
+        }
+        if (
+          keyValue.right &&
+          tempPosition + myShip.offsetWidth < containerDim.right
+        ) {
+          tempPosition += player.speed;
+        }
+        myShip.style.left = `${tempPosition}px`;
+        player.animationFrame = requestAnimationFrame(update);
+      }
+    </script>
+  </body>
+</html>
