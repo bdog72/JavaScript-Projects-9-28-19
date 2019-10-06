@@ -14,6 +14,11 @@
         overflow: hidden;
       }
 
+      .top-bar span .message {
+        text-align: center;
+        color: red;
+      }
+
       .start-button {
         text-align: center;
         font-size: 2em;
@@ -87,12 +92,21 @@
         border: 4px dotted white;
         background-color: black;
       }
+      .top-bar {
+        height: 50px;
+        width: 100%;
+        background-color: black;
+        color: white;
+        text-align: center;
+        font-size: 2em;
+      }
     </style>
   </head>
   <body>
     <!-- prettier-ignore -->
     <div class="top-bar">
       Score: <span class="score">0</span>
+      <span class="message"></span>
     </div>
     <div class="container">
       <div class="start-button">Start Game</div>
@@ -101,6 +115,7 @@
     </div>
     <script>
       const scoreOutput = document.querySelector('.score');
+      const message = document.querySelector('.message');
       const container = document.querySelector('.container');
       const buttonStart = document.querySelector('.start-button');
       const myShip = document.querySelector('.my-ship');
@@ -141,13 +156,31 @@
         }
       });
 
+      function gameOver() {
+        buttonStart.style.display = 'block';
+        buttonStart.innerHTML = 'Restart New Game';
+        player.fire = true;
+        fireMe.classList.add('hide');
+      }
+
+      function clearAliens() {
+        let tempAliens = document.querySelectorAll('.alien');
+        for (let x = 0; x < tempAliens.length; x++) {
+          tempAliens[x].parentNode.removeChild(tempAliens[x]);
+        }
+      }
+
       function startGame() {
         if (player.gameOver) {
+          clearAliens();
           player.gameOver = false;
           buttonStart.style.display = 'none';
           player.alienSpeed = 5;
+          player.score = 0;
+          player.fire = true;
+          scoreOutput.textContent = player.score;
           setUpAliens(5);
-          // console.log('Start');
+          messageOutput('Start Game');
           player.animationFrame = requestAnimationFrame(update);
         }
       }
@@ -222,48 +255,85 @@
         fireMe.style.backgroundColor = randomColor();
       }
 
+      function isCollide(a, b) {
+        let aRect = a.getBoundingClientRect();
+        let bRect = b.getBoundingClientRect();
+        return !(
+          aRect.bottom < bRect.top ||
+          aRect.top > bRect.bottom ||
+          aRect.right < bRect.left ||
+          aRect.left > bRect.right
+        );
+      }
+
+      function messageOutput(mes) {
+        message.innerHTML = mes;
+      }
+
       function update() {
-        let tempAliens = document.querySelectorAll('.alien');
-        for (let x = tempAliens.length - 1; x > -1; x--) {
-          let el = tempAliens[x];
+        if (!player.gameOver) {
+          let tempAliens = document.querySelectorAll('.alien');
+          if (tempAliens.length === 0) {
+            player.gameOver = true;
+            messageOutput('You Won Bozo');
+            gameOver();
+          }
+          for (let x = tempAliens.length - 1; x > -1; x--) {
+            let el = tempAliens[x];
+            if (isCollide(el, fireMe)) {
+              console.log('HIT');
+              player.alienSpeed++;
+              player.score++;
+              scoreOutput.textContent = `${player.score}`;
+              player.fire = false;
+              fireMe.classList.add('hide');
+              el.parentNode.removeChild(el);
+              fireMe.yPosition = containerDim.height + 100;
+            }
+            if (
+              el.xPosition > containerDim.width - el.offsetWidth ||
+              el.xPosition < containerDim.left
+            ) {
+              el.directionMove *= -1;
+              el.yPosition += 40;
+              if (el.yPosition > myShip.offsetTop - 20) {
+                console.log('Game Over Bozo');
+                player.gameOver = true;
+                gameOver();
+              }
+            }
+            // el.directionMove = 1;
+            el.xPosition += player.alienSpeed * el.directionMove;
+            // el.yPosition = Math.floor(row.y);
+            el.style.left = `${el.xPosition}px`;
+            el.style.top = `${el.yPosition}px`;
+          }
+
+          let tempPosition = myShip.offsetLeft;
+
+          if (player.fire) {
+            if (fireMe.yPosition > 0) {
+              fireMe.yPosition -= 15;
+              fireMe.style.top = fireMe.yPosition + 'px';
+            } else {
+              player.fire = false;
+              fireMe.classList.add('hide');
+              fireMe.yPosition = containerDim.height + 100;
+            }
+          }
+
+          if (keyValue.left && tempPosition > containerDim.left) {
+            tempPosition -= player.speed;
+          }
           if (
-            el.xPosition > containerDim.width - el.offsetWidth ||
-            el.xPosition < containerDim.left
+            keyValue.right &&
+            tempPosition + myShip.offsetWidth < containerDim.right
           ) {
-            el.directionMove *= -1;
-            el.yPosition += 40;
+            tempPosition += player.speed;
           }
-          // el.directionMove = 1;
-          el.xPosition += player.alienSpeed * el.directionMove;
-          // el.yPosition = Math.floor(row.y);
-          el.style.left = `${el.xPosition}px`;
-          el.style.top = `${el.yPosition}px`;
+          myShip.style.left = `${tempPosition}px`;
+          player.animationFrame = requestAnimationFrame(update);
         }
-
-        let tempPosition = myShip.offsetLeft;
-
-        if (player.fire) {
-          if (fireMe.yPosition > 0) {
-            fireMe.yPosition -= 15;
-            fireMe.style.top = fireMe.yPosition + 'px';
-          } else {
-            player.fire = false;
-            fireMe.classList.add('hide');
-            fireMe.yPosition = containerDim.height + 100;
-          }
-        }
-
-        if (keyValue.left && tempPosition > containerDim.left) {
-          tempPosition -= player.speed;
-        }
-        if (
-          keyValue.right &&
-          tempPosition + myShip.offsetWidth < containerDim.right
-        ) {
-          tempPosition += player.speed;
-        }
-        myShip.style.left = `${tempPosition}px`;
-        player.animationFrame = requestAnimationFrame(update);
       }
     </script>
   </body>
